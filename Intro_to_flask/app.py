@@ -1,11 +1,27 @@
-from flask import Flask, jsonify, request, url_for, redirect, session, render_template
-
+from flask import Flask, jsonify, request, url_for, redirect, session, render_template, g
+import sqlite3
 app = Flask(__name__)
 
 #Configuration moving debug from the bottom.
 app.config['DEBUG'] = True
 #Cookie
 app.config['SECRET_KEY'] = 'Thisisasecret!'
+
+# Connect to database
+def connect_db():
+    sql = sqlite3.connect('intro_data.sqlite3')
+    return sql
+
+def get_db():
+    if not hasattr(g, 'sqlite3'):
+        g.sqlite_db = connect_db()
+    return g.sqlite_db
+
+#close the database
+@app.teardown_appcontext
+def close_db(error):
+    if hasattr(g, 'sqlite_db'):
+        g.sqlite_db.close()
 
 # App.route is a function of Flask that will run the underlying function when parameter is called.
 @app.route('/')
@@ -16,7 +32,7 @@ def index():
 @app.route('/home/<name>', methods=['POST', 'GET'])
 def home(name):
     session['name'] = name
-    return render_template('home.html', name=name)
+    return render_template('home.html', name=name, display=True, mylist=['one', 'two', 'three', 'four'], listofdictionaries=[{'name': 'Zach'}, {'name': 'Zoe'}])
 
 @app.route('/json')
 def json():
@@ -54,7 +70,26 @@ def processjson():
     name = data['location']
     location = data['randomlist']
 
+    db = get_db()
+    insert = """
+    INSERT into name (name, location)
+    VALUES (?, ?)
+    """
+    db.execute(insert, [name, location])
+    db.commit()
+    
     return jsonify({'result': 'Success', 'name': name, 'location': location, 'randomkeyinlist': randomlist[1]})
+# This will show result of my database
+@app.route('/viewresults')
+def viewresults():
+    db = get_db()
+    select_query = """
+    SELECT *
+    FROM name
+    """
+    cur = db.execute(select_query)
+    results = cur.fetchall()
+    return f"<h1>{results[0][1]} is from {results[0][2]}.</h1>"
 
 if __name__ == "__main__":
     app.run()
