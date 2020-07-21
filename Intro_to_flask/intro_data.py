@@ -20,7 +20,7 @@ VALUES ("Noah", "Philly"),("SasDaddy", "Atlanta")
 curs.execute(insert_statement)
 # Check Table
 select_statement = """
-SELECT * FROM name;
+SELECT ID, name, location from name;
 """
 
 curs.execute(select_statement)

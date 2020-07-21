@@ -32,7 +32,14 @@ def index():
 @app.route('/home/<name>', methods=['POST', 'GET'])
 def home(name):
     session['name'] = name
-    return render_template('home.html', name=name, display=True, mylist=['one', 'two', 'three', 'four'], listofdictionaries=[{'name': 'Zach'}, {'name': 'Zoe'}])
+    db = get_db()
+    select = """
+    SELECT ID, name, location from name
+    """
+    cur = db.execute(select)
+    results = cur.fetchall()
+
+    return render_template('home.html', name=name, display=True, mylist=['one', 'two', 'three', 'four'], listofdictionaries=[{'name': 'Zach'}, {'name': 'Zoe'}], results = results)
 
 @app.route('/json')
 def json():
@@ -52,13 +59,19 @@ def query():
 # This will return a form that will also POST form.
 @app.route('/theform', methods=['GET', 'POST'])
 def theform():
-
+    
     if request.method == 'GET':
         return render_template('form.html') 
     else:
         name = request.form['name']
         location = request.form['location']
-
+        db = get_db()
+        insert = f"""
+        INSERT into name (name, location)
+        VALUES (?, ?)
+        """
+        db.execute(insert, [name, location])
+        db.commit()
         #return '<h1>Hello {}. You are from {}. You have submitted the form successfully!<h1>'.format(name, location)
         return redirect(url_for('home', name=name, Location=location))
     
@@ -70,14 +83,8 @@ def processjson():
     name = data['location']
     location = data['randomlist']
 
-    db = get_db()
-    insert = """
-    INSERT into name (name, location)
-    VALUES (?, ?)
-    """
-    db.execute(insert, [name, location])
-    db.commit()
     
+
     return jsonify({'result': 'Success', 'name': name, 'location': location, 'randomkeyinlist': randomlist[1]})
 # This will show result of my database
 @app.route('/viewresults')
@@ -89,7 +96,7 @@ def viewresults():
     """
     cur = db.execute(select_query)
     results = cur.fetchall()
-    return f"<h1>{results[0][1]} is from {results[0][2]}.</h1>"
+    return f"<h1>{results[0][4]} is from {results[0][4]}.</h1>"
 
 if __name__ == "__main__":
     app.run()

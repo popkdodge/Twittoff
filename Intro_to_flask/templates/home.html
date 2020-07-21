@@ -5,6 +5,11 @@
 {% block content %}
 <h1>Hello {{ name }}, you are on the home page!</h1>
 
+<h1>Database Results!</h1>
+{% for item in results %}
+<h2> ID: {{ item[0] }} Name: {{ item[1] }}  Location: {{ item[2] }}</h2>
+{% endfor %}
+
 {% if display %}
 <h2>This is being displayed!</h2>
 {% else %}
