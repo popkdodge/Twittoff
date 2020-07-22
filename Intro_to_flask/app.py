@@ -83,8 +83,6 @@ def processjson():
     name = data['location']
     location = data['randomlist']
 
-    
-
     return jsonify({'result': 'Success', 'name': name, 'location': location, 'randomkeyinlist': randomlist[1]})
 # This will show result of my database
 @app.route('/viewresults')

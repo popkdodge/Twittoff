@@ -3,11 +3,13 @@ from os import getenv
 import basilica
 import tweepy
 from .models import DB, Tweet, User
+
 # https://greatist.com/happiness/must-follow-twitter-accounts
 TWITTER_USERS = ['calebhicks', 'elonmusk', 'rrherr', 'SteveMartinToGo',
                  'alyankovic', 'nasa', 'sadserver', 'jkhowland', 'austen',
                  'common_squirrel', 'KenJennings', 'conanobrien',
                  'big_ben_clock', 'IAM_SHAKESPEARE']
+
 # TODO don't check this in! Use environment variables
 TWITTER_AUTH = tweepy.OAuthHandler(
     getenv('TWITTER_API_KEY'),
@@ -15,6 +17,8 @@ TWITTER_AUTH = tweepy.OAuthHandler(
 )
 TWITTER = tweepy.API(TWITTER_AUTH)
 BASILICA = basilica.Connection(getenv('BASILICA_KEY'))
+
+
 def add_or_update_user(username):
     """Add or update a user and their Tweets, error if not a Twitter user."""
     try:
@@ -41,10 +45,14 @@ def add_or_update_user(username):
         raise e
     else:
         DB.session.commit()
+
+
 def add_users(users=TWITTER_USERS):
     """Add/update a list of users."""
     for user in users:
         add_or_update_user(user)
+
+
 def update_all_users():
     """Update all existing users."""
     for user in User.query.all():
